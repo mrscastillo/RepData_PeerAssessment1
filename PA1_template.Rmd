@@ -1,25 +1,80 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
+title: 'Reproducible Research: Peer Assessment 1'
+output:
   html_document:
-    keep_md: true
+    keep_md: yes
+  pdf_document: default
 ---
 
 
 ## Loading and preprocessing the data
 
+```{r echo = TRUE}
 
+path <- "C:/Users/mrsca/OneDrive - Deadlock Solutions, SRL/Entrenamientos/Coursera/R/RepData_PeerAssessment1/activity/activity.csv"
+activity<- read.csv(path)
+library (dplyr)
+library (lubridate)
+activity$date <- ymd(activity$date)
+
+```
 
 ## What is mean total number of steps taken per day?
 
+
+```{r echo = TRUE}
+
+activitybydate <- group_by(activity, date=ymd(date))
+activitybydate <- summarize(activitybydate, total = sum(steps, na.rm = TRUE), stepmean= mean(steps, na.rm = TRUE), stepmedian= median(steps, na.rm = TRUE))
+
+hist(activitybydate$total, main="Histogram Total steps per day")
+activitybydate[,c(1,3,4)]
+
+```
 
 
 ## What is the average daily activity pattern?
 
 
+```{r echo = TRUE}
+
+
+plot(activity$steps,activity$date, type="l")
+
+
+
+```
 
 ## Imputing missing values
+```{r echo = TRUE}
+
+# Rows with NA
+count(activity[!complete.cases(activity), ])
+activityna <- activity 
+activityna[!complete.cases(activityna), 1] <- 0  
+# Fills with 0 all NA
+
+activitynabydate <- group_by(activityna, date=ymd(date))
+activitynabydate <- summarize(activitynabydate, total = sum(steps, na.rm = TRUE), stepmean= mean(steps, na.rm = TRUE), stepmedian= median(steps, na.rm = TRUE))
+
+hist(activitynabydate$total, main="Histogram Total steps per day")
+activitynabydate[,c(1,3,4)]
+#Affects the final result
 
 
+
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r echo = TRUE}
+
+activitywday <- mutate(activity,  weekend = ifelse(wday(date) %in% c(1,7), "Weekend", "Weekday"))
+
+library(lattice)
+
+xyplot(date ~ steps| weekend , data =activitywday,type="l", layout=c(1,2))
+
+
+```
+
